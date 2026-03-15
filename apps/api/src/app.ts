@@ -9,6 +9,8 @@ import { userRoutes } from "./routes/users.js";
 import { organizationRoutes } from "./routes/organizations.js";
 import { cityRoutes } from "./routes/cities.js";
 import { eventRoutes } from "./routes/events.js";
+import { parseRoutes } from "./routes/parse.js";
+import { venueRoutes } from "./routes/venues.js";
 import { trace } from "./plugins/trace.js";
 import type { Database } from "@uniapp/db";
 
@@ -92,6 +94,8 @@ export async function buildApp() {
   await app.register(organizationRoutes, { prefix: "/api/v1/organizations" });
   await app.register(cityRoutes, { prefix: "/api/v1/cities" });
   await app.register(eventRoutes, { prefix: "/api/v1/events" });
+  await app.register(parseRoutes, { prefix: "/api/v1/events/parse" });
+  await app.register(venueRoutes, { prefix: "/api/v1/venues" });
 
   return app;
 }
