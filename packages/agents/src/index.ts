@@ -3,6 +3,9 @@ export { OrchestratorAgent, type OrchestratorOptions, type OrchestratorResult, t
 export { NegotiationEngine, type NegotiationRound, type NegotiationProposal } from "./agents/negotiation-engine.js";
 export { VenueAgent, type VenueAgentOptions, type VenueAgentDecision } from "./agents/venue-agent.js";
 export { VendorAgent, type VendorAgentOptions, type BidProposal } from "./agents/vendor-agent.js";
+export { ConstraintSolver, type Constraint, type ConflictInput, type ConstraintResolution } from "./agents/constraint-solver.js";
+export { VolunteerAgent, type VolunteerMatchResult } from "./agents/volunteer-agent.js";
+export { MemoryStore, type MemoryType, type Memory } from "./memory/memory-store.js";
 export { createVenueTools } from "./tools/venue-tools.js";
 export { createBookingTools } from "./tools/booking-tools.js";
 export { createEventTools } from "./tools/event-tools.js";

@@ -24,6 +24,10 @@ import { negotiationRoutes } from "./routes/negotiations.js";
 import { bidRoutes } from "./routes/bids.js";
 import { approvalRoutes } from "./routes/approvals.js";
 import { orchestrateRoutes } from "./routes/orchestrate.js";
+import { observabilityRoutes } from "./routes/observability.js";
+import { constraintRoutes } from "./routes/constraints.js";
+import { memoryRoutes } from "./routes/memory.js";
+import { volunteerMatchRoutes } from "./routes/volunteer-match.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
 import type { Database } from "@uniapp/db";
@@ -124,6 +128,10 @@ export async function buildApp() {
   await app.register(bidRoutes, { prefix: "/api/v1/bids" });
   await app.register(approvalRoutes, { prefix: "/api/v1/events" });
   await app.register(orchestrateRoutes, { prefix: "/api/v1/events" });
+  await app.register(observabilityRoutes, { prefix: "/api/v1/events" });
+  await app.register(volunteerMatchRoutes, { prefix: "/api/v1/events" });
+  await app.register(constraintRoutes, { prefix: "/api/v1/constraints" });
+  await app.register(memoryRoutes, { prefix: "/api/v1/memory" });
 
   return app;
 }
