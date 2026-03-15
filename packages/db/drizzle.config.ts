@@ -1,10 +1,13 @@
 import { defineConfig } from "drizzle-kit";
+import "dotenv/config";
 
 export default defineConfig({
-  schema: "./src/schema/index.ts",
+  schema: "./src/schema/*.ts",
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? "postgresql://uniapp:uniapp@localhost:5432/uniapp",
+    url: process.env.DATABASE_URL ?? "postgresql://uniapp:uniapp_dev@localhost:5432/uniapp",
   },
+  verbose: true,
+  strict: false,
 });
