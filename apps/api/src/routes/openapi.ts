@@ -169,15 +169,19 @@ export const openapiRoutes: FastifyPluginAsync = async (app) => {
 
   // GET /api/docs — Scalar API Reference UI
   try {
-    const { default: ScalarApiReference } = await import("@scalar/fastify-api-reference");
-    await app.register(ScalarApiReference, {
-      routePrefix: "/api/docs",
-      configuration: {
-        spec: { url: "/api/v1/openapi.json" },
-        title: "UniApp API Reference",
-        theme: "purple",
-      },
-    });
+    const scalarModule = await import("@scalar/fastify-api-reference").catch(() => null);
+    if (scalarModule) {
+      await app.register(scalarModule.default as Parameters<typeof app.register>[0], {
+        routePrefix: "/api/docs",
+        configuration: {
+          spec: { url: "/api/v1/openapi.json" },
+          title: "UniApp API Reference",
+          theme: "purple",
+        },
+      });
+    } else {
+      app.log.warn("@scalar/fastify-api-reference not available — /api/docs disabled");
+    }
   } catch {
     app.log.warn("@scalar/fastify-api-reference not available — /api/docs disabled");
   }

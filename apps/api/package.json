@@ -19,6 +19,7 @@
     "@fastify/rate-limit": "^10.3.0",
     "@fastify/sensible": "^6.0.0",
     "@fastify/websocket": "^11.2.0",
+    "@scalar/fastify-api-reference": "^1.48.7",
     "@uniapp/agents": "workspace:*",
     "@uniapp/ai": "workspace:*",
     "@uniapp/db": "workspace:*",

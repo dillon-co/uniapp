@@ -41,6 +41,7 @@ import { incidentRoutes } from "./routes/incidents.js";
 import { sponsorRoutes } from "./routes/sponsors.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
+import { securityPlugin } from "./plugins/security.js";
 import type { Database } from "@uniapp/db";
 
 declare module "fastify" {
@@ -78,6 +79,7 @@ export async function buildApp() {
   });
 
   await app.register(sensible);
+  await app.register(securityPlugin);
   await app.register(trace);
   await app.register(websocketPlugin);
 

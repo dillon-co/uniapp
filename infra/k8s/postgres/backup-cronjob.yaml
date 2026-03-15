@@ -1,0 +1,131 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: uniapp
+  labels:
+    app: postgres-backup
+    component: backup
+spec:
+  schedule: "*/15 * * * *"  # Every 15 minutes
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: backup-sa
+          containers:
+            - name: postgres-backup
+              image: postgres:16-alpine
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credentials
+                      key: password
+                - name: PGHOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credentials
+                      key: host
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credentials
+                      key: username
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credentials
+                      key: database
+                - name: S3_BUCKET
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-credentials
+                      key: s3_bucket
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-credentials
+                      key: aws_access_key_id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-credentials
+                      key: aws_secret_access_key
+                - name: AWS_DEFAULT_REGION
+                  value: "us-east-1"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  BACKUP_FILE="uniapp_${TIMESTAMP}.sql.gz"
+                  S3_PATH="s3://${S3_BUCKET}/backups/postgres/${BACKUP_FILE}"
+
+                  echo "Starting backup at ${TIMESTAMP}"
+
+                  # Create backup
+                  pg_dump \
+                    --host="${PGHOST}" \
+                    --username="${PGUSER}" \
+                    --dbname="${PGDATABASE}" \
+                    --format=plain \
+                    --no-owner \
+                    --no-acl \
+                    | gzip > "/tmp/${BACKUP_FILE}"
+
+                  echo "Backup created: ${BACKUP_FILE} ($(du -sh /tmp/${BACKUP_FILE} | cut -f1))"
+
+                  # Upload to S3
+                  aws s3 cp "/tmp/${BACKUP_FILE}" "${S3_PATH}" \
+                    --sse aws:kms \
+                    --storage-class STANDARD_IA
+
+                  echo "Uploaded to ${S3_PATH}"
+
+                  # Update 'latest' pointer
+                  aws s3 cp "${S3_PATH}" "s3://${S3_BUCKET}/backups/postgres/latest.sql.gz" \
+                    --sse aws:kms
+
+                  # Cleanup local file
+                  rm -f "/tmp/${BACKUP_FILE}"
+
+                  # Prune backups older than 7 days
+                  aws s3 ls "s3://${S3_BUCKET}/backups/postgres/" \
+                    | awk '{print $4}' \
+                    | grep -v latest \
+                    | while read f; do
+                        DATE=$(echo $f | grep -oP '\d{8}')
+                        CUTOFF=$(date -d '7 days ago' +%Y%m%d)
+                        if [ "$DATE" -lt "$CUTOFF" ]; then
+                          aws s3 rm "s3://${S3_BUCKET}/backups/postgres/${f}"
+                          echo "Pruned old backup: ${f}"
+                        fi
+                      done
+
+                  echo "Backup completed successfully"
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backup-sa
+  namespace: uniapp
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/uniapp-backup-role"
