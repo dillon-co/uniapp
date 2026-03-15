@@ -43,9 +43,11 @@ import { feedbackRoutes } from "./routes/feedback.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
 import { securityPlugin } from "./plugins/security.js";
+import { requestLoggerPlugin } from "./plugins/request-logger.js";
 import { cachePlugin } from "./plugins/cache.js";
 import { multiTenant } from "./plugins/multi-tenant.js";
 import { metricsPlugin } from "./plugins/metrics.js";
+import { getConfig } from "./config.js";
 import type { Database } from "@uniapp/db";
 
 declare module "fastify" {
@@ -63,10 +65,12 @@ declare module "fastify" {
 }
 
 export async function buildApp() {
+  const config = getConfig();
+
   const app = Fastify({
     logger: {
-      level: process.env.NODE_ENV === "production" ? "info" : "debug",
-      ...(process.env.NODE_ENV !== "production" && {
+      level: config.server.logLevel,
+      ...(config.server.nodeEnv !== "production" && {
         transport: { target: "pino-pretty", options: { colorize: true } },
       }),
     },
@@ -75,34 +79,28 @@ export async function buildApp() {
 
   // Plugins
   await app.register(cors, {
-    origin:
-      process.env.NODE_ENV === "production"
-        ? (process.env.ALLOWED_ORIGINS ?? "https://uniapp.dev").split(",")
-        : true,
+    origin: config.server.nodeEnv === "production" ? config.cors.allowedOrigins : true,
     credentials: true,
   });
 
   await app.register(sensible);
   await app.register(metricsPlugin);
   await app.register(securityPlugin);
+  await app.register(requestLoggerPlugin);
   await app.register(cachePlugin);
   await app.register(multiTenant);
   await app.register(trace);
   await app.register(websocketPlugin);
 
   await app.register(jwt, {
-    secret: process.env.JWT_SECRET ?? "dev-secret-change-me",
+    secret: config.auth.jwtSecret,
     sign: {
-      expiresIn: process.env.JWT_EXPIRES_IN ?? "15m",
+      expiresIn: config.auth.tokenExpiry,
     },
   });
 
   // Database
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL environment variable is required");
-  }
-  const db = createDb(databaseUrl);
+  const db = createDb(config.db.url);
   app.decorate("db", db);
 
   // Error handler
