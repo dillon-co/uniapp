@@ -31,6 +31,8 @@ import { volunteerMatchRoutes } from "./routes/volunteer-match.js";
 import { paymentRoutes } from "./routes/payments.js";
 import { trustRoutes } from "./routes/trust.js";
 import { verificationRoutes } from "./routes/verifications.js";
+import { permitRoutes } from "./routes/permits.js";
+import { financialRoutes } from "./routes/financial.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
 import type { Database } from "@uniapp/db";
@@ -138,6 +140,8 @@ export async function buildApp() {
   await app.register(paymentRoutes, { prefix: "/api/v1/payments" });
   await app.register(trustRoutes, { prefix: "/api/v1/trust" });
   await app.register(verificationRoutes, { prefix: "/api/v1/verifications" });
+  await app.register(permitRoutes, { prefix: "/api/v1/events" });
+  await app.register(financialRoutes, { prefix: "/api/v1/events" });
 
   return app;
 }

@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
-import { AgentRuntime, type AgentType } from "@uniapp/agents";
+import { AgentRuntime, type AgentType, CityAgent } from "@uniapp/agents";
 import { authenticate } from "../middleware/auth.js";
 
 const AGENT_TYPES = ["orchestrator", "venue-scout", "vendor-coordinator", "volunteer-coordinator", "permit-processor"] as const;
@@ -77,6 +77,25 @@ export const agentRoutes: FastifyPluginAsync = async (app) => {
           maxAgents: MAX_AGENTS_PER_EVENT,
         },
       };
+    },
+  );
+
+  // POST /api/v1/agents/city-check — City Government Agent
+  app.post(
+    "/city-check",
+    { onRequest: [authenticate] },
+    async (request) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        throw app.httpErrors.serviceUnavailable("AI service not configured");
+      }
+
+      const body = z
+        .object({ eventId: z.string().uuid(), cityId: z.string().uuid() })
+        .parse(request.body);
+
+      const agent = new CityAgent(app.db);
+      const result = await agent.checkEvent({ eventId: body.eventId, cityId: body.cityId });
+      return { data: result };
     },
   );
 };

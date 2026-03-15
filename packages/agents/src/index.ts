@@ -10,3 +10,5 @@ export { createVenueTools } from "./tools/venue-tools.js";
 export { createBookingTools } from "./tools/booking-tools.js";
 export { createEventTools } from "./tools/event-tools.js";
 export { createVendorTools } from "./tools/vendor-tools.js";
+export { PermitAgent, type PermitAgentOptions, type PermitAgentResult, type PermitApplication } from "./agents/permit-agent.js";
+export { CityAgent, type CityCheckOptions, type CityCheckResult } from "./agents/city-agent.js";
