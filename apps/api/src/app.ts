@@ -37,6 +37,8 @@ import { complianceRoutes } from "./routes/compliance.js";
 import { sponsorshipRoutes } from "./routes/sponsorships.js";
 import { analyticsRoutes } from "./routes/analytics.js";
 import { weatherRoutes } from "./routes/weather.js";
+import { incidentRoutes } from "./routes/incidents.js";
+import { sponsorRoutes } from "./routes/sponsors.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
 import type { Database } from "@uniapp/db";
@@ -150,6 +152,8 @@ export async function buildApp() {
   await app.register(sponsorshipRoutes, { prefix: "/api/v1/events" });
   await app.register(analyticsRoutes, { prefix: "/api/v1/analytics" });
   await app.register(weatherRoutes, { prefix: "/api/v1/weather" });
+  await app.register(incidentRoutes, { prefix: "/api/v1/events" });
+  await app.register(sponsorRoutes, { prefix: "/api/v1/sponsors" });
 
   return app;
 }

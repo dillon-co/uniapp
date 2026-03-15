@@ -14,3 +14,5 @@ export { PermitAgent, type PermitAgentOptions, type PermitAgentResult, type Perm
 export { CityAgent, type CityCheckOptions, type CityCheckResult } from "./agents/city-agent.js";
 export { DemandForecaster, type ForecastResult } from "./agents/demand-forecaster.js";
 export { PricingAgent, type PricingRecommendation } from "./agents/pricing-agent.js";
+export { RiskAssessor, type RiskReport } from "./agents/risk-assessor.js";
+export { SponsorAgent, type SponsorMatchResult, type SponsorMatch } from "./agents/sponsor-agent.js";

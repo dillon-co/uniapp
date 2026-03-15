@@ -3,7 +3,7 @@ import { z } from "zod";
 import { eq, and, inArray, desc, sql } from "drizzle-orm";
 import { events, eventHistory } from "@uniapp/db";
 import { EdlSchema, EdlPatchSchema } from "@uniapp/edl";
-import { DemandForecaster } from "@uniapp/agents";
+import { DemandForecaster, RiskAssessor } from "@uniapp/agents";
 import { authenticate } from "../middleware/auth.js";
 
 // Valid status transitions per the state machine
@@ -304,6 +304,84 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
       const forecaster = new DemandForecaster(app.db);
       const result = await forecaster.forecast(request.params.id);
       return { data: result };
+    },
+  );
+
+  // POST /api/v1/events/:id/risk-assess — AI risk assessment
+  app.post<{ Params: { id: string } }>(
+    "/:id/risk-assess",
+    { onRequest: [authenticate] },
+    async (request) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        throw app.httpErrors.serviceUnavailable("AI service not configured");
+      }
+      const event = await getEventOrThrow(app, request.params.id);
+      assertEventViewer(app, event, request.jwtPayload);
+
+      const assessor = new RiskAssessor(app.db);
+      const result = await assessor.assess(request.params.id);
+      return { data: result };
+    },
+  );
+
+  // POST /api/v1/events/:id/contingency-plan — Claude generates contingency plan
+  app.post<{ Params: { id: string } }>(
+    "/:id/contingency-plan",
+    { onRequest: [authenticate] },
+    async (request) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        throw app.httpErrors.serviceUnavailable("AI service not configured");
+      }
+      const event = await getEventOrThrow(app, request.params.id);
+      assertEventViewer(app, event, request.jwtPayload);
+
+      // First get a risk assessment
+      const assessor = new RiskAssessor(app.db);
+      const riskReport = await assessor.assess(request.params.id);
+
+      const Anthropic = (await import("@anthropic-ai/sdk")).default;
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+      const response = await client.messages.create({
+        model: "claude-opus-4-5",
+        max_tokens: 2000,
+        messages: [
+          {
+            role: "user",
+            content: `Based on this risk assessment for event "${event.title}", create a comprehensive contingency plan.
+
+Risk Assessment:
+${JSON.stringify(riskReport, null, 2)}
+
+Generate a contingency plan with:
+1. Primary contingency actions for each high/critical risk
+2. Communication plan (who to notify and when)
+3. Escalation procedures
+4. Recovery timeline
+5. Budget reserves needed
+
+Format as structured JSON with sections: primaryActions, communicationPlan, escalationProcedures, recoveryTimeline, budgetReserveCents`,
+          },
+        ],
+      });
+
+      const textContent = response.content.find((c: { type: string }) => c.type === "text") as { type: "text"; text: string } | undefined;
+      let plan: unknown;
+      try {
+        const jsonMatch = textContent?.text.match(/\{[\s\S]*\}/);
+        plan = JSON.parse(jsonMatch?.[0] ?? textContent?.text ?? "{}");
+      } catch {
+        plan = { summary: textContent?.text ?? "Contingency plan generation failed" };
+      }
+
+      return {
+        data: {
+          eventId: request.params.id,
+          riskReport,
+          contingencyPlan: plan,
+          generatedAt: new Date().toISOString(),
+        },
+      };
     },
   );
 };
