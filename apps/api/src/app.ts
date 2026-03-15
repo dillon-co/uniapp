@@ -20,6 +20,10 @@ import { vendorRoutes } from "./routes/vendors.js";
 import { volunteerRoutes } from "./routes/volunteers.js";
 import { notificationRoutes } from "./routes/notifications.js";
 import { agentRoutes } from "./routes/agents.js";
+import { negotiationRoutes } from "./routes/negotiations.js";
+import { bidRoutes } from "./routes/bids.js";
+import { approvalRoutes } from "./routes/approvals.js";
+import { orchestrateRoutes } from "./routes/orchestrate.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
 import type { Database } from "@uniapp/db";
@@ -116,6 +120,10 @@ export async function buildApp() {
   await app.register(volunteerRoutes, { prefix: "/api/v1/volunteers" });
   await app.register(notificationRoutes, { prefix: "/api/v1/notifications" });
   await app.register(agentRoutes, { prefix: "/api/v1/agents" });
+  await app.register(negotiationRoutes, { prefix: "/api/v1/negotiations" });
+  await app.register(bidRoutes, { prefix: "/api/v1/bids" });
+  await app.register(approvalRoutes, { prefix: "/api/v1/events" });
+  await app.register(orchestrateRoutes, { prefix: "/api/v1/events" });
 
   return app;
 }
