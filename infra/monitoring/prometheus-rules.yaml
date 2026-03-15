@@ -1,0 +1,58 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: uniapp-alerts
+  namespace: uniapp
+  labels:
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: uniapp.agents
+      interval: 30s
+      rules:
+        - alert: AgentErrorRateHigh
+          expr: |
+            rate(uniapp_agent_errors_total[5m]) /
+            rate(uniapp_agent_runs_total[5m]) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Agent error rate above 5%"
+            description: "Agent {{ $labels.type }} error rate is {{ $value | humanizePercentage }}"
+
+        - alert: AgentCostSpiking
+          expr: |
+            increase(uniapp_agent_cost_usd_total[1h]) > 50
+          for: 0m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "AI agent cost spike detected"
+            description: "Agent cost increased by ${{ $value }} in the last hour"
+
+    - name: uniapp.api
+      interval: 30s
+      rules:
+        - alert: APIHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              rate(http_request_duration_seconds_bucket{job="uniapp-api"}[5m])
+            ) > 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "API p95 latency above 2s"
+
+        - alert: APIErrorRate
+          expr: |
+            rate(http_requests_total{job="uniapp-api", status=~"5.."}[5m]) /
+            rate(http_requests_total{job="uniapp-api"}[5m]) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "API 5xx error rate above 1%"

@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { venues, bookings } from "@uniapp/db";
+import { PricingAgent } from "@uniapp/agents";
 import { authenticate } from "../middleware/auth.js";
 
 const createVenueSchema = z.object({
@@ -354,6 +355,20 @@ export const venueRoutes: FastifyPluginAsync = async (app) => {
 
       await app.db.delete(venues).where(eq(venues.id, venue.id));
       reply.status(204).send();
+    },
+  );
+
+  // POST /api/v1/venues/:id/price-recommend — dynamic pricing recommendation
+  app.post<{ Params: { id: string } }>(
+    "/:id/price-recommend",
+    { onRequest: [authenticate] },
+    async (request) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        throw app.httpErrors.serviceUnavailable("AI service not configured");
+      }
+      const agent = new PricingAgent(app.db);
+      const result = await agent.recommendPrice(request.params.id);
+      return { data: result };
     },
   );
 };

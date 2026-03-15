@@ -3,6 +3,7 @@ import { z } from "zod";
 import { eq, and, inArray, desc, sql } from "drizzle-orm";
 import { events, eventHistory } from "@uniapp/db";
 import { EdlSchema, EdlPatchSchema } from "@uniapp/edl";
+import { DemandForecaster } from "@uniapp/agents";
 import { authenticate } from "../middleware/auth.js";
 
 // Valid status transitions per the state machine
@@ -286,6 +287,23 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
       });
 
       return { data: history };
+    },
+  );
+
+  // POST /api/v1/events/:id/forecast — AI demand forecast
+  app.post<{ Params: { id: string } }>(
+    "/:id/forecast",
+    { onRequest: [authenticate] },
+    async (request) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        throw app.httpErrors.serviceUnavailable("AI service not configured");
+      }
+      const event = await getEventOrThrow(app, request.params.id);
+      assertEventViewer(app, event, request.jwtPayload);
+
+      const forecaster = new DemandForecaster(app.db);
+      const result = await forecaster.forecast(request.params.id);
+      return { data: result };
     },
   );
 };

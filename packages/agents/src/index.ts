@@ -12,3 +12,5 @@ export { createEventTools } from "./tools/event-tools.js";
 export { createVendorTools } from "./tools/vendor-tools.js";
 export { PermitAgent, type PermitAgentOptions, type PermitAgentResult, type PermitApplication } from "./agents/permit-agent.js";
 export { CityAgent, type CityCheckOptions, type CityCheckResult } from "./agents/city-agent.js";
+export { DemandForecaster, type ForecastResult } from "./agents/demand-forecaster.js";
+export { PricingAgent, type PricingRecommendation } from "./agents/pricing-agent.js";
