@@ -28,6 +28,9 @@ import { observabilityRoutes } from "./routes/observability.js";
 import { constraintRoutes } from "./routes/constraints.js";
 import { memoryRoutes } from "./routes/memory.js";
 import { volunteerMatchRoutes } from "./routes/volunteer-match.js";
+import { paymentRoutes } from "./routes/payments.js";
+import { trustRoutes } from "./routes/trust.js";
+import { verificationRoutes } from "./routes/verifications.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
 import type { Database } from "@uniapp/db";
@@ -132,6 +135,9 @@ export async function buildApp() {
   await app.register(volunteerMatchRoutes, { prefix: "/api/v1/events" });
   await app.register(constraintRoutes, { prefix: "/api/v1/constraints" });
   await app.register(memoryRoutes, { prefix: "/api/v1/memory" });
+  await app.register(paymentRoutes, { prefix: "/api/v1/payments" });
+  await app.register(trustRoutes, { prefix: "/api/v1/trust" });
+  await app.register(verificationRoutes, { prefix: "/api/v1/verifications" });
 
   return app;
 }

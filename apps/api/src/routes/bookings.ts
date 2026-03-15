@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
-import { eq, and, or, lte, gte, sql, desc } from "drizzle-orm";
-import { bookings, venues, events, auditLog } from "@uniapp/db";
+import { eq, and, lte, gte, sql, desc } from "drizzle-orm";
+import { bookings, events, auditLog, payments } from "@uniapp/db";
 import { authenticate } from "../middleware/auth.js";
 
 const BOOKING_STATUSES = ["pending", "approved", "confirmed", "completed", "rejected", "cancelled"] as const;
@@ -247,6 +247,56 @@ export const bookingRoutes: FastifyPluginAsync = async (app) => {
         .returning();
 
       return { data: updated };
+    },
+  );
+
+  // POST /api/v1/bookings/:id/pay — create a mock payment and mark booking paid
+  app.post<{ Params: { id: string } }>(
+    "/:id/pay",
+    { onRequest: [authenticate] },
+    async (request) => {
+      const booking = await app.db.query.bookings.findFirst({
+        where: eq(bookings.id, request.params.id),
+      });
+      if (!booking) throw app.httpErrors.notFound("Booking not found");
+      if (booking.paidAt) throw app.httpErrors.conflict("Booking already paid");
+
+      const event = await app.db.query.events.findFirst({
+        where: eq(events.id, booking.eventId),
+        columns: { organizerId: true },
+      });
+      const isOwner = event?.organizerId === request.jwtPayload.userId;
+      const isAdmin = request.jwtPayload.roles.includes("platform_admin");
+      if (!isOwner && !isAdmin) throw app.httpErrors.forbidden("Access denied");
+
+      const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+      const chargeId = `ch_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+      const [payment] = await app.db
+        .insert(payments)
+        .values({
+          bookingId: booking.id,
+          paymentIntentId,
+          stripeChargeId: chargeId,
+          amountCents: booking.priceCents,
+          currency: "usd",
+          status: "succeeded",
+          paymentMethod: "card",
+        })
+        .returning();
+
+      const [updatedBooking] = await app.db
+        .update(bookings)
+        .set({
+          paidAt: new Date(),
+          paymentIntentId,
+          stripeChargeId: chargeId,
+          status: booking.status === "confirmed" ? "confirmed" : booking.status,
+        })
+        .where(eq(bookings.id, booking.id))
+        .returning();
+
+      return { data: { booking: updatedBooking, payment } };
     },
   );
 };

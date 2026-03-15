@@ -17,3 +17,5 @@ export { bids } from "./bids.js";
 export { approvalGates } from "./approvals.js";
 export { auditLog } from "./audit-log.js";
 export { agentMemory } from "./agent-memory.js";
+export { payments } from "./payments.js";
+export { verifications } from "./verifications.js";

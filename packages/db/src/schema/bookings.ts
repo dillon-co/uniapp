@@ -14,5 +14,8 @@ export const bookings = pgTable("bookings", {
   endDate: timestamp("end_date", { withTimezone: true }).notNull(),
   negotiationId: uuid("negotiation_id"),
   confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  paidAt: timestamp("paid_at", { withTimezone: true }),
+  paymentIntentId: text("payment_intent_id"),
+  stripeChargeId: text("stripe_charge_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
