@@ -221,6 +221,46 @@ importers:
 
   packages/shared: {}
 
+  packages/testing:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^10.0.0
+        version: 10.1.0
+      '@fastify/jwt':
+        specifier: ^9.0.0
+        version: 9.1.0
+      '@fastify/sensible':
+        specifier: ^6.0.0
+        version: 6.0.4
+      '@uniapp/db':
+        specifier: workspace:*
+        version: link:../db
+      '@uniapp/shared':
+        specifier: workspace:*
+        version: link:../shared
+      bcrypt:
+        specifier: ^5.1.0
+        version: 5.1.1
+      dotenv:
+        specifier: ^16.4.0
+        version: 16.6.1
+      drizzle-orm:
+        specifier: ^0.36.0
+        version: 0.36.4(@types/react@19.2.14)(postgres@3.4.8)(react@19.2.4)
+      fastify:
+        specifier: ^5.1.0
+        version: 5.8.2
+      fastify-plugin:
+        specifier: ^5.1.0
+        version: 5.1.0
+    devDependencies:
+      '@types/bcrypt':
+        specifier: ^5.0.0
+        version: 5.0.2
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@25.5.0)(lightningcss@1.31.1)
+
   packages/ui:
     dependencies:
       react:

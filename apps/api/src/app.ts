@@ -39,11 +39,13 @@ import { analyticsRoutes } from "./routes/analytics.js";
 import { weatherRoutes } from "./routes/weather.js";
 import { incidentRoutes } from "./routes/incidents.js";
 import { sponsorRoutes } from "./routes/sponsors.js";
+import { feedbackRoutes } from "./routes/feedback.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
 import { securityPlugin } from "./plugins/security.js";
 import { cachePlugin } from "./plugins/cache.js";
 import { multiTenant } from "./plugins/multi-tenant.js";
+import { metricsPlugin } from "./plugins/metrics.js";
 import type { Database } from "@uniapp/db";
 
 declare module "fastify" {
@@ -81,6 +83,7 @@ export async function buildApp() {
   });
 
   await app.register(sensible);
+  await app.register(metricsPlugin);
   await app.register(securityPlugin);
   await app.register(cachePlugin);
   await app.register(multiTenant);
@@ -160,6 +163,7 @@ export async function buildApp() {
   await app.register(weatherRoutes, { prefix: "/api/v1/weather" });
   await app.register(incidentRoutes, { prefix: "/api/v1/events" });
   await app.register(sponsorRoutes, { prefix: "/api/v1/sponsors" });
+  await app.register(feedbackRoutes, { prefix: "/api/v1/feedback" });
 
   return app;
 }
