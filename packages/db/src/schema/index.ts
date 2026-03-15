@@ -21,3 +21,4 @@ export { payments } from "./payments.js";
 export { verifications } from "./verifications.js";
 export { permits } from "./permits.js";
 export { settlements } from "./settlements.js";
+export { sponsorships } from "./sponsorships.js";
