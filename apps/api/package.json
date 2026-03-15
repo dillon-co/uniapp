@@ -17,6 +17,8 @@
     "@fastify/jwt": "^9.0.0",
     "@fastify/rate-limit": "^10.3.0",
     "@fastify/sensible": "^6.0.0",
+    "@fastify/websocket": "^11.2.0",
+    "@uniapp/agents": "workspace:*",
     "@uniapp/ai": "workspace:*",
     "@uniapp/db": "workspace:*",
     "@uniapp/edl": "workspace:*",
@@ -31,6 +33,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
+    "@types/ws": "^8.18.1",
     "tsx": "^4.19.0"
   }
 }

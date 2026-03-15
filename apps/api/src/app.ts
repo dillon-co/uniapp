@@ -16,7 +16,12 @@ import { reviewRoutes } from "./routes/reviews.js";
 import { searchRoutes } from "./routes/search.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
 import { importRoutes } from "./routes/import.js";
+import { vendorRoutes } from "./routes/vendors.js";
+import { volunteerRoutes } from "./routes/volunteers.js";
+import { notificationRoutes } from "./routes/notifications.js";
+import { agentRoutes } from "./routes/agents.js";
 import { trace } from "./plugins/trace.js";
+import { websocketPlugin } from "./plugins/websocket.js";
 import type { Database } from "@uniapp/db";
 
 declare module "fastify" {
@@ -55,6 +60,7 @@ export async function buildApp() {
 
   await app.register(sensible);
   await app.register(trace);
+  await app.register(websocketPlugin);
 
   await app.register(jwt, {
     secret: process.env.JWT_SECRET ?? "dev-secret-change-me",
@@ -106,6 +112,10 @@ export async function buildApp() {
   await app.register(venueRoutes, { prefix: "/api/v1/venues" });
   await app.register(reviewRoutes, { prefix: "/api/v1/venues" });
   await app.register(bookingRoutes, { prefix: "/api/v1/bookings" });
+  await app.register(vendorRoutes, { prefix: "/api/v1/vendors" });
+  await app.register(volunteerRoutes, { prefix: "/api/v1/volunteers" });
+  await app.register(notificationRoutes, { prefix: "/api/v1/notifications" });
+  await app.register(agentRoutes, { prefix: "/api/v1/agents" });
 
   return app;
 }
