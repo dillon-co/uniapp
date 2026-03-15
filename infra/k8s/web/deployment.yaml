@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uniapp-web
+  labels:
+    app: uniapp-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: uniapp-web
+  template:
+    metadata:
+      labels:
+        app: uniapp-web
+    spec:
+      containers:
+        - name: web
+          image: uniapp/web:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://api.uniapp.dev"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
