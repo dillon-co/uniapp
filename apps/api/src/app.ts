@@ -42,6 +42,8 @@ import { sponsorRoutes } from "./routes/sponsors.js";
 import { trace } from "./plugins/trace.js";
 import { websocketPlugin } from "./plugins/websocket.js";
 import { securityPlugin } from "./plugins/security.js";
+import { cachePlugin } from "./plugins/cache.js";
+import { multiTenant } from "./plugins/multi-tenant.js";
 import type { Database } from "@uniapp/db";
 
 declare module "fastify" {
@@ -80,6 +82,8 @@ export async function buildApp() {
 
   await app.register(sensible);
   await app.register(securityPlugin);
+  await app.register(cachePlugin);
+  await app.register(multiTenant);
   await app.register(trace);
   await app.register(websocketPlugin);
 
