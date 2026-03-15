@@ -6,5 +6,6 @@ export { events } from "./events.js";
 export { eventHistory } from "./event-history.js";
 export { venues } from "./venues.js";
 export { bookings } from "./bookings.js";
+export { reviews } from "./reviews.js";
 export { auditLog } from "./audit-log.js";
 export { agentMemory } from "./agent-memory.js";

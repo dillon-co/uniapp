@@ -11,6 +11,11 @@ import { cityRoutes } from "./routes/cities.js";
 import { eventRoutes } from "./routes/events.js";
 import { parseRoutes } from "./routes/parse.js";
 import { venueRoutes } from "./routes/venues.js";
+import { bookingRoutes } from "./routes/bookings.js";
+import { reviewRoutes } from "./routes/reviews.js";
+import { searchRoutes } from "./routes/search.js";
+import { dashboardRoutes } from "./routes/dashboard.js";
+import { importRoutes } from "./routes/import.js";
 import { trace } from "./plugins/trace.js";
 import type { Database } from "@uniapp/db";
 
@@ -95,7 +100,12 @@ export async function buildApp() {
   await app.register(cityRoutes, { prefix: "/api/v1/cities" });
   await app.register(eventRoutes, { prefix: "/api/v1/events" });
   await app.register(parseRoutes, { prefix: "/api/v1/events/parse" });
+  await app.register(importRoutes, { prefix: "/api/v1/events/import" });
+  await app.register(searchRoutes, { prefix: "/api/v1/events/search" });
+  await app.register(dashboardRoutes, { prefix: "/api/v1/events" });
   await app.register(venueRoutes, { prefix: "/api/v1/venues" });
+  await app.register(reviewRoutes, { prefix: "/api/v1/venues" });
+  await app.register(bookingRoutes, { prefix: "/api/v1/bookings" });
 
   return app;
 }
